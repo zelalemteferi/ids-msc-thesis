@@ -1,0 +1,22 @@
+name: env_tf1_devnet
+python: '3.6'
+channels:
+- conda-forge
+- defaults
+dependencies:
+- tensorflow==1.10.0
+- keras==2.2.4
+- numpy==1.14.5
+- pandas==0.23.4
+- scikit-learn==0.20.0
+- scipy==1.1.0
+- matplotlib==2.2.4
+- h5py==2.10.0
+- tensorboard==1.10.0
+- ipykernel
+- ipython
+- matplotlib_inline
+- omegaconf
+- pip
+- pip: []
+repo_url: https://github.com/GuansongPang/deviation-network.git

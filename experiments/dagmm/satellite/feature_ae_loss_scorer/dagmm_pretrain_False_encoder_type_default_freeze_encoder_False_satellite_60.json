@@ -1,0 +1,189 @@
+{
+  "experiment_run": {
+    "experiment_id": "e85fba80-b35f-4b4d-a4d1-df71d1042448",
+    "variant_name": "feature_ae_loss_scorer",
+    "model_name": "dagmm",
+    "model_imp": "Third Party",
+    "architecture": "AE",
+    "config_type": "dagmm_default_configs",
+    "model_cate": "benchmark",
+    "description": "DAGMM experiment with feature_ae_loss_scorer on satellite"
+  },
+  "datasets": {
+    "experiment_id": "e85fba80-b35f-4b4d-a4d1-df71d1042448",
+    "contamination_rate": 0.02,
+    "shuffle": {
+      "train": false,
+      "test": false
+    },
+    "split": {
+      "train": 0.8,
+      "test": 0.2,
+      "stratify": true
+    },
+    "preprocessing": {
+      "numerical": "minmax",
+      "categorical": "onehot",
+      "handle_missing": true
+    },
+    "name": "satellite",
+    "input_dim": 36,
+    "N": 6435,
+    "anomaly_ratio": 0.83,
+    "weakly_supervision": 60
+  },
+  "training": {
+    "random_seed": 42,
+    "pre_training": {
+      "enabled": false,
+      "dataset": "normal_only",
+      "optimizer": {
+        "name": "Adam",
+        "lr": 0.0001
+      },
+      "clipnorm": null,
+      "loss": "mean_squared_error",
+      "batch_size": 1024,
+      "steps_per_epoch": null,
+      "epochs": 200
+    },
+    "main_training": {
+      "enabled": true,
+      "dataset": "mixed",
+      "optimizer": {
+        "name": "Adam",
+        "lr": 0.0001
+      },
+      "clipnorm": null,
+      "loss": "dagmm_loss",
+      "batch_size": 1024,
+      "steps_per_epoch": null,
+      "epochs": 200,
+      "dagmm": {
+        "latent_dim": 1,
+        "lr_milestones": 50,
+        "patience": 50,
+        "n_gmm": 4,
+        "lambda_energy": 0.1,
+        "lambda_cov": 0.005
+      }
+    },
+    "checkpoint": {
+      "save_best_only": true,
+      "save_weights_only": true
+    },
+    "experiment_id": "e85fba80-b35f-4b4d-a4d1-df71d1042448"
+  },
+  "evaluation": {
+    "runs": 10,
+    "random_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "metrics": [
+      "auc",
+      "ap"
+    ],
+    "mode": "unsupervised",
+    "experiment_id": "e85fba80-b35f-4b4d-a4d1-df71d1042448"
+  },
+  "model": {
+    "experiment_id": "e85fba80-b35f-4b4d-a4d1-df71d1042448",
+    "variant": "feature_ae_loss_scorer",
+    "model_name": "dagmm",
+    "encoder_type": null,
+    "freeze_encoder": null,
+    "pre_training": null,
+    "dataset_name": "satellite",
+    "input_dim": 36,
+    "latent_dim": 64,
+    "features": [
+      "encoder_output",
+      "relative_l2_distance",
+      "cosine_similarity"
+    ],
+    "encoder": [
+      {
+        "type": "Input",
+        "units": 36
+      },
+      {
+        "type": "Dense",
+        "units": 60,
+        "activation": "tanh"
+      },
+      {
+        "type": "Dense",
+        "units": 30,
+        "activation": "tanh"
+      },
+      {
+        "type": "Dense",
+        "units": 10,
+        "activation": "tanh"
+      },
+      {
+        "type": "Dense",
+        "units": "z_dim",
+        "activation": "linear",
+        "name": "encoder_output"
+      }
+    ],
+    "decoder": [
+      {
+        "type": "Input",
+        "units": "len(z_dim)"
+      },
+      {
+        "type": "Dense",
+        "units": 10,
+        "activation": "tanh"
+      },
+      {
+        "type": "Dense",
+        "units": 30,
+        "activation": "tanh"
+      },
+      {
+        "type": "Dense",
+        "units": 60,
+        "activation": "tanh"
+      },
+      {
+        "type": "Dense",
+        "units": 36,
+        "activation": "linear",
+        "name": "decoder_output"
+      }
+    ],
+    "scoring_network": [
+      {
+        "type": "Dense",
+        "units": "z_dim + 2",
+        "activation": "linear"
+      },
+      {
+        "type": "Dense",
+        "units": 10,
+        "activation": "tanh"
+      },
+      {
+        "type": "Dense",
+        "units": "n_gmm",
+        "activation": "softmax"
+      }
+    ],
+    "loss_function": {
+      "name": "dagmm_loss",
+      "description": "Margin-based confidence loss combining inlier, outlier, and reconstruction terms"
+    }
+  }
+}

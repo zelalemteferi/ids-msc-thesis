@@ -1,0 +1,16 @@
+name: env_tf1_feawad
+python: '3.6'
+channels:
+- conda-forge
+- defaults
+dependencies:
+- keras==2.3.1
+- tensorflow==1.13.1
+- numpy==1.19.4
+- pandas==1.1.5
+- scikit-learn==0.20.0
+- scipy==1.5.2
+- h5py==2.10.0
+- pip
+- pip: []
+repo_url: https://github.com/yj-zhou/Feature_Encoding_with_AutoEncoders_for_Weakly-supervised_Anomaly_Detection.git

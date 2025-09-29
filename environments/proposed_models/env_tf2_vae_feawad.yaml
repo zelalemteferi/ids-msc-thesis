@@ -1,0 +1,14 @@
+name: env_tf2_vae_feawad
+python: '3.10'
+channels:
+- conda-forge
+- defaults
+dependencies:
+- tensorflow==2.15
+- keras==3.0
+- numpy==1.26.4
+- pandas==2.2.2
+- scikit-learn==1.5.2
+- pip
+- pip: []
+repo_url: null

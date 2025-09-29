@@ -1,0 +1,145 @@
+{
+  "experiment_run": {
+    "experiment_id": "ddd9f380-6135-43b4-94c4-6d6ed35ff482",
+    "variant_name": "feature_only",
+    "model_name": "dagmm",
+    "model_imp": "Third Party",
+    "architecture": "AE",
+    "config_type": "dagmm_default_configs",
+    "model_cate": "benchmark",
+    "description": "DAGMM experiment with feature_only on satellite"
+  },
+  "datasets": {
+    "experiment_id": "ddd9f380-6135-43b4-94c4-6d6ed35ff482",
+    "contamination_rate": 0.02,
+    "shuffle": {
+      "train": false,
+      "test": false
+    },
+    "split": {
+      "train": 0.8,
+      "test": 0.2,
+      "stratify": true
+    },
+    "preprocessing": {
+      "numerical": "minmax",
+      "categorical": "onehot",
+      "handle_missing": true
+    },
+    "name": "satellite",
+    "input_dim": 36,
+    "N": 6435,
+    "anomaly_ratio": 0.83,
+    "weakly_supervision": 30
+  },
+  "training": {
+    "random_seed": 42,
+    "pre_training": {
+      "enabled": false,
+      "dataset": "normal_only",
+      "optimizer": {
+        "name": "Adam",
+        "lr": 0.0001
+      },
+      "clipnorm": null,
+      "loss": "mean_squared_error",
+      "batch_size": 1024,
+      "steps_per_epoch": null,
+      "epochs": 200
+    },
+    "main_training": {
+      "enabled": true,
+      "dataset": "mixed",
+      "optimizer": {
+        "name": "Adam",
+        "lr": 0.0001
+      },
+      "clipnorm": null,
+      "loss": "dagmm_loss",
+      "batch_size": 1024,
+      "steps_per_epoch": null,
+      "epochs": 200,
+      "dagmm": {
+        "latent_dim": 1,
+        "lr_milestones": 50,
+        "patience": 50,
+        "n_gmm": 4,
+        "lambda_energy": 0.1,
+        "lambda_cov": 0.005
+      }
+    },
+    "checkpoint": {
+      "save_best_only": true,
+      "save_weights_only": true
+    },
+    "experiment_id": "ddd9f380-6135-43b4-94c4-6d6ed35ff482"
+  },
+  "evaluation": {
+    "runs": 10,
+    "random_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "metrics": [
+      "auc",
+      "ap"
+    ],
+    "mode": "unsupervised",
+    "experiment_id": "ddd9f380-6135-43b4-94c4-6d6ed35ff482"
+  },
+  "model": {
+    "experiment_id": "ddd9f380-6135-43b4-94c4-6d6ed35ff482",
+    "variant": "feature_only",
+    "model_name": "dagmm",
+    "encoder_type": "ae_split",
+    "freeze_encoder": false,
+    "pre_training": null,
+    "dataset_name": "satellite",
+    "input_dim": 36,
+    "latent_dim": 64,
+    "features": [
+      "encoder_output",
+      "relative_l2_distance",
+      "cosine_similarity"
+    ],
+    "encoder": null,
+    "decoder": null,
+    "scoring_network": [
+      {
+        "type": "Input",
+        "units": 36,
+        "model": "fixed"
+      },
+      {
+        "units": 256,
+        "activation": "relu",
+        "initializer": "glorot_normal",
+        "use_bias": true
+      },
+      {
+        "units": 32,
+        "activation": "relu",
+        "initializer": "glorot_normal",
+        "use_bias": true
+      },
+      {
+        "units": "output_dim",
+        "activation": "linear",
+        "initializer": "glorot_normal",
+        "use_bias": true,
+        "name": "score"
+      }
+    ],
+    "loss_function": [
+      "mse"
+    ]
+  }
+}

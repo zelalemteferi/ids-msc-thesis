@@ -1,0 +1,148 @@
+{
+  "experiment_run": {
+    "experiment_id": "82786384-6936-4cb3-853a-b7bb4c9aea0f",
+    "variant_name": "loss_only",
+    "model_name": "vae_feawad",
+    "model_imp": "Custom (Proposed)",
+    "architecture": "VAE",
+    "config_type": "vae_feawad_default_configs",
+    "model_cate": "proposed",
+    "description": "VAE_FEAWAD experiment with loss_only on nslkdd"
+  },
+  "datasets": {
+    "experiment_id": "82786384-6936-4cb3-853a-b7bb4c9aea0f",
+    "contamination_rate": 0.02,
+    "shuffle": {
+      "train": false,
+      "test": false
+    },
+    "split": {
+      "train": 0.8,
+      "test": 0.2,
+      "stratify": true
+    },
+    "preprocessing": {
+      "numerical": "minmax",
+      "categorical": "onehot",
+      "handle_missing": true
+    },
+    "name": "nslkdd",
+    "input_dim": 122,
+    "N": 148517,
+    "anomaly_ratio": 0.05,
+    "weakly_supervision": 30
+  },
+  "training": {
+    "random_seed": 42,
+    "pre_training": {
+      "enabled": false,
+      "dataset": "normal_only",
+      "optimizer": {
+        "name": "Adam",
+        "lr": 0.0001
+      },
+      "clipnorm": null,
+      "loss": "mean_squared_error",
+      "batch_size": 512,
+      "steps_per_epoch": 20,
+      "epochs": 100
+    },
+    "main_training": {
+      "enabled": true,
+      "dataset": "mixed",
+      "optimizer": {
+        "name": "Adam",
+        "lr": 0.0001
+      },
+      "clipnorm": null,
+      "loss": "feawad_multi_loss",
+      "batch_size": 512,
+      "steps_per_epoch": 20,
+      "epochs": 30
+    },
+    "checkpoint": {
+      "save_best_only": true,
+      "save_weights_only": true
+    },
+    "experiment_id": "82786384-6936-4cb3-853a-b7bb4c9aea0f"
+  },
+  "evaluation": {
+    "runs": 10,
+    "random_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "metrics": [
+      "auc",
+      "ap"
+    ],
+    "mode": "weakly_supervised",
+    "experiment_id": "82786384-6936-4cb3-853a-b7bb4c9aea0f"
+  },
+  "model": {
+    "experiment_id": "82786384-6936-4cb3-853a-b7bb4c9aea0f",
+    "variant": "loss_only",
+    "model_name": "vae_feawad",
+    "encoder_type": "vae_full",
+    "freeze_encoder": false,
+    "pre_training": false,
+    "dataset_name": "nslkdd",
+    "input_dim": 122,
+    "latent_dim": 64,
+    "features": [
+      "latent_z"
+    ],
+    "encoder": null,
+    "decoder": null,
+    "scoring_network": [
+      {
+        "type": "Input",
+        "units": 122,
+        "model": "fixed"
+      },
+      {
+        "units": 256,
+        "activation": "relu",
+        "initializer": "glorot_normal",
+        "use_bias": true
+      },
+      {
+        "units": 32,
+        "activation": "relu",
+        "initializer": "glorot_normal",
+        "use_bias": true
+      },
+      {
+        "units": "output_dim",
+        "activation": "linear",
+        "initializer": "glorot_normal",
+        "use_bias": true,
+        "name": "score"
+      }
+    ],
+    "loss_function": {
+      "name": "vae_feawad_loss",
+      "description": "Combination of reconstruction, KL divergence, & weakly-supervised feature encoding",
+      "components": {
+        "reconstruction_loss": "MSE(x_input, vae_reconstruction)",
+        "kl_divergence": "0.5 * sum(exp(logvar) + mu^2 - 1 - logvar)",
+        "weak_label_loss": "(1 - y_true) * (|score| + ||residual||) + y_true * (|max(margin - score, 0)| + |max(margin - ||residual||, 0)|)"
+      },
+      "formula": "L = recon_loss(x_input, vae_reconstruction) + KL(z_mu, z_logvar) + components.weak_label_loss(score, y_true)",
+      "hyperparams": {
+        "confidence_margin": 5.0,
+        "kl_weight": 1.0,
+        "recon_weight": 1.0,
+        "weak_loss_weight": 1.0
+      }
+    }
+  }
+}

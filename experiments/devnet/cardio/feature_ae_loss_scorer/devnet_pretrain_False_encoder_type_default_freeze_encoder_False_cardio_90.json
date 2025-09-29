@@ -1,0 +1,140 @@
+{
+  "experiment_run": {
+    "experiment_id": "c960c2da-6115-4b83-9c44-ee2b9b770742",
+    "variant_name": "feature_ae_loss_scorer",
+    "model_name": "devnet",
+    "model_imp": "Official",
+    "architecture": "MLP",
+    "config_type": "devnet_default_configs",
+    "model_cate": "benchmark",
+    "description": "DevNet experiment with feature_ae_loss_scorer on cardio"
+  },
+  "datasets": {
+    "experiment_id": "c960c2da-6115-4b83-9c44-ee2b9b770742",
+    "contamination_rate": 0.02,
+    "shuffle": {
+      "train": false,
+      "test": false
+    },
+    "split": {
+      "train": 0.8,
+      "test": 0.2,
+      "stratify": true
+    },
+    "preprocessing": {
+      "numerical": "minmax",
+      "categorical": "onehot",
+      "handle_missing": true
+    },
+    "name": "cardio",
+    "input_dim": 21,
+    "N": 1831,
+    "anomaly_ratio": 2.17,
+    "weakly_supervision": 90
+  },
+  "training": {
+    "random_seed": 42,
+    "pre_training": {
+      "enabled": false,
+      "dataset": "normal_only",
+      "optimizer": {
+        "name": "RMSprop",
+        "lr": 0.001
+      },
+      "clipnorm": 1.0,
+      "loss": "mse",
+      "batch_size": 512,
+      "steps_per_epoch": 20,
+      "epochs": 100
+    },
+    "main_training": {
+      "enabled": true,
+      "dataset": "mixed",
+      "optimizer": {
+        "name": "RMSprop",
+        "lr": 0.001
+      },
+      "clipnorm": 1.0,
+      "loss": "multi_loss",
+      "batch_size": 512,
+      "steps_per_epoch": 20,
+      "epochs": 50
+    },
+    "checkpoint": {
+      "save_best_only": true,
+      "save_weights_only": true
+    },
+    "experiment_id": "c960c2da-6115-4b83-9c44-ee2b9b770742"
+  },
+  "evaluation": {
+    "runs": 10,
+    "random_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "metrics": [
+      "auc",
+      "ap"
+    ],
+    "mode": "weakly_supervised",
+    "experiment_id": "c960c2da-6115-4b83-9c44-ee2b9b770742"
+  },
+  "model": {
+    "experiment_id": "c960c2da-6115-4b83-9c44-ee2b9b770742",
+    "variant": "feature_ae_loss_scorer",
+    "model_name": "devnet",
+    "encoder_type": null,
+    "freeze_encoder": null,
+    "pre_training": null,
+    "dataset_name": "cardio",
+    "input_dim": 21,
+    "latent_dim": 64,
+    "features": [
+      "mlp_output"
+    ],
+    "encoder": null,
+    "decoder": null,
+    "scoring_network": [
+      {
+        "type": "Input",
+        "units": 21
+      },
+      {
+        "type": "Dense",
+        "units": 1000,
+        "activation": "relu",
+        "kernel_regularizer": "l2(0.01)"
+      },
+      {
+        "type": "Dense",
+        "units": 250,
+        "activation": "relu",
+        "kernel_regularizer": "l2(0.01)"
+      },
+      {
+        "type": "Dense",
+        "units": 20,
+        "activation": "relu",
+        "kernel_regularizer": "l2(0.01)"
+      },
+      {
+        "type": "Dense",
+        "units": 1,
+        "activation": "linear",
+        "name": "score_output"
+      }
+    ],
+    "loss_function": {
+      "name": "multi_loss",
+      "description": "Margin-based confidence loss combining inlier, outlier, and reconstruction terms"
+    }
+  }
+}

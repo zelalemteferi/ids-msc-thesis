@@ -1,0 +1,146 @@
+{
+  "experiment_run": {
+    "experiment_id": "6cc31f70-2e0d-4546-b3b7-ac5db8892e08",
+    "variant_name": "ablation_study",
+    "model_name": "vae_feawad",
+    "model_imp": "Custom (Proposed)",
+    "architecture": "VAE",
+    "config_type": "vae_feawad_default_configs",
+    "model_cate": "proposed",
+    "description": "VAE_FEAWAD experiment with ablation_study on shuttle",
+    "experiment_name": "VAE_FEAWAD_SHUTTLE_Encoding_Ablation_4",
+    "ablation_description": "Encoding Strategy Ablation (Table III): KL divergence only {'name': 'kld_only', 'features': ['kld'], 'description': 'KL divergence only'}, shuttle (combination 4)"
+  },
+  "datasets": {
+    "experiment_id": "6cc31f70-2e0d-4546-b3b7-ac5db8892e08",
+    "contamination_rate": 0.02,
+    "shuffle": {
+      "train": false,
+      "test": false
+    },
+    "split": {
+      "train": 0.8,
+      "test": 0.2,
+      "stratify": true
+    },
+    "preprocessing": {
+      "numerical": "minmax",
+      "categorical": "onehot",
+      "handle_missing": true
+    },
+    "name": "shuttle",
+    "input_dim": 9,
+    "N": 49097,
+    "anomaly_ratio": 0.08,
+    "weakly_supervision": 30
+  },
+  "training": {
+    "random_seed": 42,
+    "pre_training": {
+      "enabled": true,
+      "dataset": "normal_only",
+      "optimizer": {
+        "name": "Adam",
+        "lr": 0.0001
+      },
+      "clipnorm": null,
+      "loss": "mean_squared_error",
+      "batch_size": 512,
+      "steps_per_epoch": 20,
+      "epochs": 100
+    },
+    "main_training": {
+      "enabled": true,
+      "dataset": "mixed",
+      "optimizer": {
+        "name": "Adam",
+        "lr": 0.0001
+      },
+      "clipnorm": null,
+      "loss": "feawad_multi_loss",
+      "batch_size": 512,
+      "steps_per_epoch": 20,
+      "epochs": 30
+    },
+    "checkpoint": {
+      "save_best_only": true,
+      "save_weights_only": true
+    },
+    "experiment_id": "6cc31f70-2e0d-4546-b3b7-ac5db8892e08"
+  },
+  "evaluation": {
+    "runs": 10,
+    "random_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "metrics": [
+      "auc",
+      "ap"
+    ],
+    "mode": "weakly_supervised",
+    "experiment_id": "6cc31f70-2e0d-4546-b3b7-ac5db8892e08"
+  },
+  "model": {
+    "experiment_id": "6cc31f70-2e0d-4546-b3b7-ac5db8892e08",
+    "variant": "ablation_study",
+    "model_name": "vae_feawad",
+    "encoder_type": null,
+    "freeze_encoder": null,
+    "pre_training": true,
+    "dataset_name": "shuttle",
+    "input_dim": 9,
+    "latent_dim": 64,
+    "features": [
+      "latent_z"
+    ],
+    "encoder": null,
+    "decoder": null,
+    "scoring_network": [
+      {
+        "type": "Input",
+        "units": 9,
+        "model": "fixed"
+      },
+      {
+        "units": 256,
+        "activation": "relu",
+        "initializer": "glorot_normal",
+        "use_bias": true
+      },
+      {
+        "units": 32,
+        "activation": "relu",
+        "initializer": "glorot_normal",
+        "use_bias": true
+      },
+      {
+        "units": "output_dim",
+        "activation": "linear",
+        "initializer": "glorot_normal",
+        "use_bias": true,
+        "name": "score"
+      }
+    ],
+    "loss_function": [
+      "mse"
+    ]
+  },
+  "ablation": {
+    "encoding_ablation": {
+      "name": "kld_only",
+      "description": "KL divergence only",
+      "features": [
+        "kld"
+      ]
+    }
+  }
+}

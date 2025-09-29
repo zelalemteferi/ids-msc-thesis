@@ -1,0 +1,139 @@
+{
+  "experiment_run": {
+    "experiment_id": "207d084b-2880-4f29-bd61-c91fc8357199",
+    "variant_name": "ablation_study",
+    "model_name": "vae_feawad",
+    "model_imp": "Custom (Proposed)",
+    "architecture": "VAE",
+    "config_type": "vae_feawad_default_configs",
+    "model_cate": "proposed",
+    "description": "Hyperparameter Sensitivity Analysis (Tables VI-VII): a0=0.1 for cardio",
+    "experiment_name": "VAE_FEAWAD_CARDIO_a0_0.1"
+  },
+  "datasets": {
+    "experiment_id": "207d084b-2880-4f29-bd61-c91fc8357199",
+    "contamination_rate": 0.02,
+    "shuffle": {
+      "train": false,
+      "test": false
+    },
+    "split": {
+      "train": 0.8,
+      "test": 0.2,
+      "stratify": true
+    },
+    "preprocessing": {
+      "numerical": "minmax",
+      "categorical": "onehot",
+      "handle_missing": true
+    },
+    "name": "cardio",
+    "input_dim": 21,
+    "N": 1831,
+    "anomaly_ratio": 2.17,
+    "weakly_supervision": 30
+  },
+  "training": {
+    "random_seed": 42,
+    "pre_training": {
+      "enabled": true,
+      "dataset": "normal_only",
+      "optimizer": {
+        "name": "Adam",
+        "lr": 0.0001
+      },
+      "clipnorm": null,
+      "loss": "mean_squared_error",
+      "batch_size": 512,
+      "steps_per_epoch": 20,
+      "epochs": 100
+    },
+    "main_training": {
+      "enabled": true,
+      "dataset": "mixed",
+      "optimizer": {
+        "name": "Adam",
+        "lr": 0.0001
+      },
+      "clipnorm": null,
+      "loss": "feawad_multi_loss",
+      "batch_size": 512,
+      "steps_per_epoch": 20,
+      "epochs": 30
+    },
+    "checkpoint": {
+      "save_best_only": true,
+      "save_weights_only": true
+    },
+    "experiment_id": "207d084b-2880-4f29-bd61-c91fc8357199"
+  },
+  "evaluation": {
+    "runs": 10,
+    "random_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "metrics": [
+      "auc",
+      "ap"
+    ],
+    "mode": "weakly_supervised",
+    "experiment_id": "207d084b-2880-4f29-bd61-c91fc8357199"
+  },
+  "model": {
+    "experiment_id": "207d084b-2880-4f29-bd61-c91fc8357199",
+    "variant": "ablation_study",
+    "model_name": "vae_feawad",
+    "encoder_type": null,
+    "freeze_encoder": null,
+    "pre_training": true,
+    "dataset_name": "cardio",
+    "input_dim": 21,
+    "latent_dim": 64,
+    "features": [
+      "latent_z"
+    ],
+    "encoder": null,
+    "decoder": null,
+    "scoring_network": [
+      {
+        "type": "Input",
+        "units": 21,
+        "model": "fixed"
+      },
+      {
+        "units": 256,
+        "activation": "relu",
+        "initializer": "glorot_normal",
+        "use_bias": true
+      },
+      {
+        "units": 32,
+        "activation": "relu",
+        "initializer": "glorot_normal",
+        "use_bias": true
+      },
+      {
+        "units": "output_dim",
+        "activation": "linear",
+        "initializer": "glorot_normal",
+        "use_bias": true,
+        "name": "score"
+      }
+    ],
+    "loss_function": [
+      "mse"
+    ]
+  },
+  "loss_hyperparameters": {
+    "a0": 0.1
+  }
+}

@@ -1,0 +1,4 @@
+# Default gitignore
+*/results/
+*/__pycache__/
+*.pyc

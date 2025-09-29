@@ -1,0 +1,209 @@
+{
+  "experiment_run": {
+    "experiment_id": "085ae18d-e0d2-46ff-bf30-13deb99ef16a",
+    "variant_name": "feature_ae_loss_scorer",
+    "model_name": "deepsad",
+    "model_imp": "Official",
+    "architecture": "MLP",
+    "config_type": "deepsad_default_configs",
+    "model_cate": "benchmark",
+    "description": "DeepSAD experiment with feature_ae_loss_scorer on shuttle"
+  },
+  "datasets": {
+    "experiment_id": "085ae18d-e0d2-46ff-bf30-13deb99ef16a",
+    "contamination_rate": 0.02,
+    "shuffle": {
+      "train": false,
+      "test": false
+    },
+    "split": {
+      "train": 0.8,
+      "test": 0.2,
+      "stratify": true
+    },
+    "preprocessing": {
+      "numerical": "standard_n_minmax",
+      "categorical": "onehot",
+      "handle_missing": true
+    },
+    "name": "shuttle",
+    "input_dim": 9,
+    "N": 49097,
+    "anomaly_ratio": 0.08,
+    "weakly_supervision": 60
+  },
+  "training": {
+    "random_seed": 42,
+    "device": "cuda",
+    "num_threads": 0,
+    "n_jobs_dataloader": 0,
+    "pre_training": {
+      "enabled": true,
+      "dataset": "mixed",
+      "optimizer": {
+        "name": "Adam",
+        "lr": 0.001,
+        "weight_decay": 1e-06
+      },
+      "lr_scheduler": {
+        "milestones": [
+          0
+        ]
+      },
+      "batch_size": 128,
+      "epochs": 100,
+      "loss": "mean_squared_error",
+      "clipnorm": null,
+      "steps_per_epoch": null,
+      "deepsad": {
+        "eta": 1.0,
+        "eps": 0.0001,
+        "ratio_known_normal": 0.0,
+        "ratio_known_outlier": 0.0,
+        "ratio_pollution": 0.0,
+        "normal_class": 0,
+        "known_outlier_class": 1,
+        "n_known_outlier_classes": 0
+      }
+    },
+    "main_training": {
+      "enabled": true,
+      "dataset": "mixed",
+      "optimizer": {
+        "name": "Adam",
+        "lr": 0.001,
+        "weight_decay": 1e-06
+      },
+      "lr_scheduler": {
+        "milestones": [
+          0
+        ]
+      },
+      "batch_size": 128,
+      "epochs": 50,
+      "loss": "deepsad_loss",
+      "clipnorm": null,
+      "steps_per_epoch": null,
+      "deepsad": {
+        "eta": 1.0,
+        "eps": 0.0001,
+        "ratio_known_normal": 0.0,
+        "ratio_known_outlier": 0.0,
+        "ratio_pollution": 0.0,
+        "normal_class": 0,
+        "known_outlier_class": 1,
+        "n_known_outlier_classes": 0
+      }
+    },
+    "checkpoint": {
+      "save_best_only": true,
+      "save_weights_only": true
+    },
+    "experiment_id": "085ae18d-e0d2-46ff-bf30-13deb99ef16a"
+  },
+  "evaluation": {
+    "runs": 10,
+    "random_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "metrics": [
+      "auc",
+      "ap"
+    ],
+    "mode": "semi_supervised",
+    "experiment_id": "085ae18d-e0d2-46ff-bf30-13deb99ef16a"
+  },
+  "model": {
+    "experiment_id": "085ae18d-e0d2-46ff-bf30-13deb99ef16a",
+    "variant": "feature_ae_loss_scorer",
+    "model_name": "deepsad",
+    "encoder_type": null,
+    "freeze_encoder": null,
+    "pre_training": true,
+    "dataset_name": "shuttle",
+    "input_dim": 9,
+    "latent_dim": 64,
+    "features": [
+      "encoder_output"
+    ],
+    "encoder": [
+      {
+        "type": "Input",
+        "units": 274
+      },
+      {
+        "type": "Dense",
+        "units": 128,
+        "activation": "leaky_relu"
+      },
+      {
+        "type": "Dense",
+        "units": 64,
+        "activation": "leaky_relu"
+      },
+      {
+        "type": "Dense",
+        "units": 32,
+        "activation": "linear",
+        "name": "encoder_output"
+      }
+    ],
+    "decoder": [
+      {
+        "type": "Input",
+        "units": 32
+      },
+      {
+        "type": "Dense",
+        "units": 64,
+        "activation": "leaky_relu"
+      },
+      {
+        "type": "Dense",
+        "units": 128,
+        "activation": "leaky_relu"
+      },
+      {
+        "type": "Dense",
+        "units": 274,
+        "activation": "linear",
+        "name": "decoder_output"
+      }
+    ],
+    "scoring_network": [
+      {
+        "type": "Input",
+        "units": 274
+      },
+      {
+        "type": "Dense",
+        "units": 128,
+        "activation": "leaky_relu"
+      },
+      {
+        "type": "Dense",
+        "units": 64,
+        "activation": "leaky_relu"
+      },
+      {
+        "type": "Dense",
+        "units": 32,
+        "activation": "linear",
+        "name": "score_output"
+      }
+    ],
+    "loss_function": {
+      "name": "deepsad_loss",
+      "description": "Latent distance based"
+    }
+  }
+}

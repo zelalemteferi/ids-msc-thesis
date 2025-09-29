@@ -1,0 +1,208 @@
+{
+  "experiment_run": {
+    "experiment_id": "2b8feb50-402e-48bc-a1d2-679e60051e8a",
+    "variant_name": "loss_only",
+    "model_name": "vae_feawad",
+    "model_imp": "Custom (Proposed)",
+    "architecture": "VAE",
+    "config_type": "vae_feawad_default_configs",
+    "model_cate": "proposed",
+    "description": "VAE_FEAWAD experiment with loss_only on spambase"
+  },
+  "datasets": {
+    "experiment_id": "2b8feb50-402e-48bc-a1d2-679e60051e8a",
+    "contamination_rate": 0.02,
+    "shuffle": {
+      "train": false,
+      "test": false
+    },
+    "split": {
+      "train": 0.8,
+      "test": 0.2,
+      "stratify": true
+    },
+    "preprocessing": {
+      "numerical": "minmax",
+      "categorical": "onehot",
+      "handle_missing": true
+    },
+    "name": "spambase",
+    "input_dim": 57,
+    "N": 4601,
+    "anomaly_ratio": 1.3,
+    "weakly_supervision": 30
+  },
+  "training": {
+    "random_seed": 42,
+    "pre_training": {
+      "enabled": true,
+      "dataset": "normal_only",
+      "optimizer": {
+        "name": "Adam",
+        "lr": 0.0001
+      },
+      "clipnorm": null,
+      "loss": "mean_squared_error",
+      "batch_size": 512,
+      "steps_per_epoch": 20,
+      "epochs": 100
+    },
+    "main_training": {
+      "enabled": true,
+      "dataset": "mixed",
+      "optimizer": {
+        "name": "Adam",
+        "lr": 0.0001
+      },
+      "clipnorm": null,
+      "loss": "feawad_multi_loss",
+      "batch_size": 512,
+      "steps_per_epoch": 20,
+      "epochs": 30
+    },
+    "checkpoint": {
+      "save_best_only": true,
+      "save_weights_only": true
+    },
+    "experiment_id": "2b8feb50-402e-48bc-a1d2-679e60051e8a"
+  },
+  "evaluation": {
+    "runs": 10,
+    "random_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "metrics": [
+      "auc",
+      "ap"
+    ],
+    "mode": "weakly_supervised",
+    "experiment_id": "2b8feb50-402e-48bc-a1d2-679e60051e8a"
+  },
+  "model": {
+    "experiment_id": "2b8feb50-402e-48bc-a1d2-679e60051e8a",
+    "variant": "loss_only",
+    "model_name": "vae_feawad",
+    "encoder_type": "vae_full",
+    "freeze_encoder": true,
+    "pre_training": true,
+    "dataset_name": "spambase",
+    "input_dim": 57,
+    "latent_dim": 64,
+    "features": [
+      "latent_z"
+    ],
+    "encoder": [
+      {
+        "type": "Input",
+        "units": 57,
+        "model": "fixed"
+      },
+      {
+        "type": "Dense",
+        "units": 57,
+        "activation": "relu",
+        "initializer": "glorot_normal",
+        "use_bias": true,
+        "name": "ain"
+      },
+      {
+        "type": "Dense",
+        "units": 128,
+        "activation": "relu",
+        "initializer": "glorot_normal",
+        "use_bias": true,
+        "name": "ae1"
+      },
+      {
+        "type": "Dense",
+        "units": "latent_dim",
+        "activation": "relu",
+        "initializer": "glorot_normal",
+        "use_bias": true,
+        "name": "mu"
+      },
+      {
+        "type": "Dense",
+        "units": "latent_dim",
+        "activation": "relu",
+        "initializer": "glorot_normal",
+        "use_bias": true,
+        "name": "logvar"
+      }
+    ],
+    "decoder": [
+      {
+        "type": "Input",
+        "units": "latent_dim",
+        "model": "fixed"
+      },
+      {
+        "type": "Dense",
+        "units": 128,
+        "activation": "relu",
+        "initializer": "glorot_normal",
+        "use_bias": true,
+        "name": "ad1"
+      },
+      {
+        "type": "Dense",
+        "units": 57,
+        "activation": "relu",
+        "initializer": "glorot_normal",
+        "use_bias": true,
+        "name": "ad2"
+      }
+    ],
+    "scoring_network": [
+      {
+        "type": "Input",
+        "units": 57,
+        "model": "fixed"
+      },
+      {
+        "units": 256,
+        "activation": "relu",
+        "initializer": "glorot_normal",
+        "use_bias": true
+      },
+      {
+        "units": 32,
+        "activation": "relu",
+        "initializer": "glorot_normal",
+        "use_bias": true
+      },
+      {
+        "units": "output_dim",
+        "activation": "linear",
+        "initializer": "glorot_normal",
+        "use_bias": true,
+        "name": "score"
+      }
+    ],
+    "loss_function": {
+      "name": "vae_feawad_loss",
+      "description": "Combination of reconstruction, KL divergence, & weakly-supervised feature encoding",
+      "components": {
+        "reconstruction_loss": "MSE(x_input, vae_reconstruction)",
+        "kl_divergence": "0.5 * sum(exp(logvar) + mu^2 - 1 - logvar)",
+        "weak_label_loss": "(1 - y_true) * (|score| + ||residual||) + y_true * (|max(margin - score, 0)| + |max(margin - ||residual||, 0)|)"
+      },
+      "formula": "L = recon_loss(x_input, vae_reconstruction) + KL(z_mu, z_logvar) + components.weak_label_loss(score, y_true)",
+      "hyperparams": {
+        "confidence_margin": 5.0,
+        "kl_weight": 1.0,
+        "recon_weight": 1.0,
+        "weak_loss_weight": 1.0
+      }
+    }
+  }
+}

@@ -1,0 +1,209 @@
+{
+  "experiment_run": {
+    "experiment_id": "0e43bb70-7eb2-4db0-872d-91d403b6366f",
+    "variant_name": "feature_ae_loss_scorer",
+    "model_name": "feawad",
+    "model_imp": "Official",
+    "architecture": "AE",
+    "config_type": "feawad_default_configs",
+    "model_cate": "benchmark",
+    "description": "FEAWAD experiment with feature_ae_loss_scorer on mammography"
+  },
+  "datasets": {
+    "experiment_id": "0e43bb70-7eb2-4db0-872d-91d403b6366f",
+    "contamination_rate": 0.02,
+    "shuffle": {
+      "train": false,
+      "test": false
+    },
+    "split": {
+      "train": 0.8,
+      "test": 0.2,
+      "stratify": true
+    },
+    "preprocessing": {
+      "numerical": "minmax",
+      "categorical": "onehot",
+      "handle_missing": true
+    },
+    "name": "mammography",
+    "input_dim": 6,
+    "N": 11183,
+    "anomaly_ratio": 0.34,
+    "weakly_supervision": 30
+  },
+  "training": {
+    "random_seed": 42,
+    "pre_training": {
+      "enabled": true,
+      "dataset": "normal_only",
+      "optimizer": {
+        "name": "Adam",
+        "lr": 0.0001
+      },
+      "clipnorm": null,
+      "loss": "mean_squared_error",
+      "batch_size": 512,
+      "steps_per_epoch": 20,
+      "epochs": 100
+    },
+    "main_training": {
+      "enabled": true,
+      "dataset": "mixed",
+      "optimizer": {
+        "name": "Adam",
+        "lr": 0.0001
+      },
+      "clipnorm": null,
+      "loss": "feawad_multi_loss",
+      "batch_size": 512,
+      "steps_per_epoch": 20,
+      "epochs": 30
+    },
+    "checkpoint": {
+      "save_best_only": true,
+      "save_weights_only": true
+    },
+    "experiment_id": "0e43bb70-7eb2-4db0-872d-91d403b6366f"
+  },
+  "evaluation": {
+    "runs": 10,
+    "random_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "metrics": [
+      "auc",
+      "ap"
+    ],
+    "mode": "weakly_supervised",
+    "experiment_id": "0e43bb70-7eb2-4db0-872d-91d403b6366f"
+  },
+  "model": {
+    "experiment_id": "0e43bb70-7eb2-4db0-872d-91d403b6366f",
+    "variant": "feature_ae_loss_scorer",
+    "model_name": "feawad",
+    "encoder_type": null,
+    "freeze_encoder": null,
+    "pre_training": true,
+    "dataset_name": "mammography",
+    "input_dim": 6,
+    "latent_dim": 64,
+    "features": [
+      "encoder_output",
+      "reconstruction_error",
+      "normalized_residual"
+    ],
+    "encoder": [
+      {
+        "type": "Input",
+        "units": 6
+      },
+      {
+        "type": "Dense",
+        "units": 6,
+        "activation": "relu",
+        "initializer": "glorot_normal",
+        "use_bias": true,
+        "name": "ain"
+      },
+      {
+        "type": "Dense",
+        "units": 128,
+        "activation": "relu",
+        "initializer": "glorot_normal",
+        "use_bias": true,
+        "name": "ae1"
+      },
+      {
+        "type": "Dense",
+        "units": "latent_dim",
+        "activation": "relu",
+        "initializer": "glorot_normal",
+        "use_bias": true,
+        "name": "encoder_output"
+      }
+    ],
+    "decoder": [
+      {
+        "type": "Input",
+        "units": "latent_dim"
+      },
+      {
+        "type": "Dense",
+        "units": 128,
+        "activation": "relu",
+        "initializer": "glorot_normal",
+        "use_bias": true,
+        "name": "ad1"
+      },
+      {
+        "type": "Dense",
+        "units": 6,
+        "activation": "relu",
+        "initializer": "glorot_normal",
+        "use_bias": true,
+        "name": "decoder_output"
+      }
+    ],
+    "scoring_network": [
+      {
+        "type": "Input",
+        "units": "len(extracted_features)"
+      },
+      {
+        "units": 256,
+        "activation": "relu",
+        "initializer": "glorot_normal",
+        "use_bias": true,
+        "name": "hl2"
+      },
+      {
+        "op": "Concat",
+        "inputs": [
+          "hl2",
+          "sub_norm2"
+        ],
+        "axis": 1
+      },
+      {
+        "units": 32,
+        "activation": "relu",
+        "initializer": "glorot_normal",
+        "use_bias": true,
+        "name": "hl3"
+      },
+      {
+        "op": "Concat",
+        "inputs": [
+          "hl3",
+          "sub_norm2"
+        ],
+        "axis": 1
+      },
+      {
+        "units": 1,
+        "activation": "linear",
+        "initializer": "glorot_normal",
+        "use_bias": true,
+        "name": "score_output"
+      }
+    ],
+    "loss_function": {
+      "name": "multi_loss",
+      "description": "Margin-based confidence loss combining inlier, outlier, and reconstruction terms",
+      "formula": "(1 - y_true) * (|y_pred| + ||residual||) + y_true * (|max(margin - y_pred, 0)| + |max(margin - ||residual||, 0)|)",
+      "hyperparams": {
+        "confidence_margin": 5.0
+      }
+    }
+  }
+}
